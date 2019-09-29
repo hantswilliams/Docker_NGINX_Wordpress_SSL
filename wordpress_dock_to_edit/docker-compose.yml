@@ -1,0 +1,49 @@
+version: '3.3'
+services:
+  db:
+    container_name: ruucm-db-container
+    image: mariadb:latest
+    restart: unless-stopped
+    volumes:
+      - ${DB_PATH}:/var/lib/mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: 46566656
+      MYSQL_DATABASE: wordpress
+      MYSQL_USER: hants
+      MYSQL_PASSWORD: 46566656
+  
+  wordpress:
+    depends_on:
+      - db
+    container_name: ruucm-wp-container
+    image: wordpress:latest
+    restart: unless-stopped
+    volumes:
+      - ${WP_CORE}:/var/www/html
+      - ${WP_CONTENT}:/var/www/html/wp-content
+      - ./uploads.ini:/usr/local/etc/php/conf.d/uploads.ini
+    environment:
+      WORDPRESS_DB_HOST: ruucm-db-container:3306
+      WORDPRESS_DB_NAME: wordpress
+      WORDPRESS_DB_USER: hants
+      WORDPRESS_DB_PASSWORD: 46566656
+      WORDPRESS_TABLE_PREFIX: wp_
+      VIRTUAL_HOST: ellenandhants.com, www.ellenandhants.com
+      LETSENCRYPT_HOST: ellenandhants.com, www.ellenandhants.com
+      LETSENCRYPT_EMAIL: hantsawilliams@gmail.com
+  
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: phpmyadmin
+    external_links:
+      - db
+    ports:
+      - 8181:80
+    environment:
+      MYSQL_USERNAME: hants
+      MYSQL_ROOT_PASSWORD: 46566656
+
+networks:
+  default:
+    external:
+      name: webproxy
